@@ -1,0 +1,28 @@
+{% extends "vis/base.html" %} {% block title %} Home {% endblock %} {% block content %}
+
+
+	<div class="row align-items-center">
+	<div class="col-md-8 mx-auto">
+	<form method = "POST" action="{% url 'display' %}" id="usrform">
+		{% csrf_token %}
+		<textarea rows="10" cols="100" name='comment' id = 'comment' placeholder="Enter text to visualize..."></textarea>
+		<input type="hidden" name="islink" value= "0" id="islink" />
+		<button type = "SUBMIT" class = "btn btn-success">SUBMIT</button>
+	</form><br>
+	<div class="row justify-content-center"><h3>OR</h3></div><br>
+	<form method = "POST" action="{% url 'display' %}" id="usrform">
+		{% csrf_token %}
+		<textarea rows="1" cols="100" name='comment' id = 'comment' placeholder="Enter link..."></textarea>
+		<input type="hidden" name="islink" value= "1" id="islink" />
+		<button type = "SUBMIT" class = "btn btn-success">SUBMIT</button>
+	</form>
+	<!-- <div class="row justify-content-center"><h3>OR</h3></div><br>
+	<form method = "POST" action="{% url 'display' %}" id="usrform">
+		{% csrf_token %}
+		<textarea rows="1" cols="100" name='comment' id = 'comment' placeholder="Enter document number..."></textarea>
+		<input type="hidden" name="islink" value= "2" id="islink" />
+		<button type = "SUBMIT" class = "btn btn-success">SUBMIT</button>
+	</form>  -->
+</div>
+</div>
+{% endblock %}

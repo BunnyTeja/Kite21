@@ -1,0 +1,433 @@
+{% extends "vis/base.html" %} {% block title %} Result {% endblock %} {% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+  {# <a class="navbar-brand" href="#">Navbar</a> #}
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+	<span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+	<ul class="navbar-nav mr-auto">
+	  <li class="nav-item active">
+		<a class="nav-link" href="#statistics">Overview<span class="sr-only">(current)</span></a>
+	  </li>
+	  <li class="nav-item active">
+		<a class="nav-link" href="#entities">Top Entities<span class="sr-only">(current)</span></a>
+	  </li>
+	  <li class="nav-item active">
+		<a class="nav-link" href="#events">Top Events<span class="sr-only">(current)</span></a>
+	  </li>
+	  {%if is_rfp == 1%}
+		  <li class="nav-item active">
+			<a class="nav-link" href="#rfp">RFP<span class="sr-only">(current)</span></a>
+		  </li>
+	  {%endif%}
+	  {%if is_person == 1%}
+		  <li class="nav-item active">
+			<a class="nav-link" href="#person">Person<span class="sr-only">(current)</span></a>
+		  </li>
+	  {%endif%}
+	  <li class="nav-item active">
+		<a class="nav-link" href="#pprint">Full Text<span class="sr-only">(current)</span></a>
+	  </li>
+	</ul>
+  </div>
+  </div>
+</nav>
+<div>
+	<div class="container" id = "statistics"><br>
+		<div class="row justify-content-center"><h2>Overview&nbsp;</h2><button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#content1">Toggle</button></div><br>
+		<div id="content1" class="collapse show">
+		<h3>Statistics</h3>
+		<div class="row">
+			<div class="col-sm-4"><h6>Number of words: {{words}}</h6></div>
+			<div class="col-sm-4"><h6>Number of sentences: {{sents}}</h6></div>
+			<div class="col-sm-4"><h6>Domain: {{text_type}}</h6></div>
+		</div>
+		<div class="row">
+			<div class="col-sm-4">
+        		<img src="data:image/png;base64,{{plot_len}}" class="img-fluid" style="width:400px;height:300px;" alt="Word Count of Sentences">
+        	</div>
+        	<div class="col-sm-4">
+        		<img src="data:image/png;base64,{{plot_sentiment}}" class="img-fluid" style="width:400px;height:300px;" alt="Sentiment">
+        	</div>
+        	<div class="col-sm-4">
+        		<img src="data:image/png;base64,{{wordcloud}}" class="img-fluid" style="width:400px;height:300px;" alt="Sentiment">
+        	</div>
+    	</div>
+    	{%if sent_ct != 0%}
+	    	<div class="container" id = "top5">
+				<div class="row"><h3>Top Sentences&nbsp;</h3><button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#content5">Toggle</button></div><br>
+				<div id="content5" class="collapse show">
+				<ul class="nav nav-tabs" role="tablist">
+				<li class="nav-item">
+			      <a class="nav-link active" data-toggle="tab" href="#positive5">Positive Sentences</a>
+			    </li>
+				<li class="nav-item">
+			      <a class="nav-link" data-toggle="tab" href="#negative5">Negative Sentences</a>
+			    </li>
+				</ul>
+				<div class="tab-content">
+					<div id="positive5" class="container tab-pane active"><br>
+						{%if positive_sent_ct != 0%}
+							<table class="table table-borderless">
+								<tbody>
+									  <tr>
+										<th>Sentence</th>
+										<th>Sentiment</th>
+									  </tr>
+									  {%for sent in positive_sent%}
+									  <tr>
+									  	<td>{{sent.0}}</td>
+									  	<td>{{sent.1}}</td>
+									  </tr>
+									  {%endfor%}
+									
+								</tbody>
+							</table>
+						{%else%}
+					    	<h6>No sentences to show here...</h6>
+					    {%endif%}
+					    </div>
+				    <div id="negative5" class="container tab-pane fade"><br>
+				    	{%if negative_sent_ct != 0%}
+							<table class="table table-borderless">
+								<tbody>
+									  <tr>
+										<th>Sentence</th>
+										<th>Sentiment</th>
+									  </tr>
+									  {%for sent in negative_sent%}
+									  <tr>
+									  	<td>{{sent.0}}</td>
+									  	<td>{{sent.1}}</td>
+									  </tr>
+									  {%endfor%}
+									
+								</tbody>
+							</table>
+						{%else%}
+					    	<h6>No sentences to show here...</h6>
+					    {%endif%}
+				    </div>
+				</div>
+				</div>
+			</div>
+		{%endif%}
+		</div>
+	</div>
+	<div class="container" id ="entities">
+		<div class="row justify-content-center"><h2>Top Entities&nbsp;</h2><button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#content2">Toggle</button></div><br>
+		<div id="content2" class="collapse show">
+		<ul class="nav nav-tabs" role="tablist">
+		<li class="nav-item">
+	      <a class="nav-link active" data-toggle="tab" href="#summary">Summary</a>
+	    </li>
+		{%for entity in entities%}
+			<li class="nav-item">
+		      <a class="nav-link" data-toggle="tab" href="#entity{{forloop.counter}}">{{entity.name}}</a>
+		    </li>
+		{%endfor%}
+		</ul>
+		<div class="tab-content">
+			<div id="summary" class="container tab-pane active"><br>
+				<div class="row">
+					{%if related_ct != 0%}
+						<div class="col-sm-5">
+			        		<img src="data:image/png;base64,{{mentions}}" class="img-fluid" style="width:400px;height:300px;" alt="Summary">
+			        	</div>
+			        	<div class="col-sm-4 align-items-center">
+			        		{%for entity in entities%}
+			        			<div class="row justify-content-center"><h6>{{entity.name}}</h6></div><br>
+			        		{%endfor%}
+			        	</div>
+			        	<div class="col-sm-3 align-items-center">
+			        		<div class="row justify-content-center"><h3>Correlations</h3></div><br>
+							{%for pair in related%}
+								<div class="row justify-content-center"><h6>{{pair.0}} &lt;---&gt; {{pair.1}}</h6></div><br>
+							{%endfor%}
+			        	</div>
+		        	{%else%}
+		        		<div class="col-sm-7">
+			        		<img src="data:image/png;base64,{{mentions}}" class="img-fluid" style="width:400px;height:300px;" alt="Summary">
+			        	</div>
+			        	<div class="col-sm-5 align-items-center">
+			        		{%for entity in entities%}
+			        			<div class="row justify-content-center"><h5>{{entity.name}}</h5></div><br>
+			        		{%endfor%}
+			        	</div>
+		        	{%endif%}
+		    	</div>
+		    </div>
+		  	{%for entity in entities%}
+				<div id="entity{{forloop.counter}}" class="container tab-pane fade"><br>
+					<h3>{{entity.name}}</h3>
+					<div class="row">
+					    <div class="col-sm-4">
+					    	<h6>Number of Mentions: {{entity.mentions}}</h6>
+							<h6>Type of Entity: {{entity.typee}}</h6>
+							<h6>Sentiment of words associated: {{entity.sentiment}}</h6>
+					    </div>
+					    <div class="col-sm-8"style="align-items: center;">
+					    	<div class="row ">
+					        	<img src="data:image/png;base64,{{entity.image}}" class="img-fluid" style="width:400px;height:300px;" alt="WordCloud">
+					    	</div>
+					    </div>	
+				    	<div class="container" id="multiCollapseExample1">
+							<div class="container">
+								<ul class="nav nav-tabs" role="tablist">
+									<li class="nav-item">
+								      <a class="nav-link active" data-toggle="tab" href="#on{{forloop.counter}}">Actions On</a>
+								    </li>
+								    <li class="nav-item">
+								      <a class="nav-link" data-toggle="tab" href="#by{{forloop.counter}}">Actions By</a>
+								    </li>
+								    {%if entity.positive_sent_ct != 0%}
+								    <li class="nav-item">
+								      <a class="nav-link" data-toggle="tab" href="#sentimentp{{forloop.counter}}">Sentiment (Positive)</a>
+								    </li>
+								    {%endif%}
+								    {%if entity.negative_sent_ct != 0%}
+								    <li class="nav-item">
+								      <a class="nav-link" data-toggle="tab" href="#sentimentn{{forloop.counter}}">Sentiment (Negative)</a>
+								    </li>
+								    {%endif%}
+								</ul>
+								<div class="tab-content">
+								    <div id="on{{forloop.counter}}" class="container tab-pane active"><br>
+								    	{%if entity.actions_on_ct == 0%}
+								    		<h6>No actions performed on entity...</h6>
+										{%else%}
+											<div class="row justify-content-center"><h4>Verb interpretations in different domains</h4></div>
+											{%for verb in entity.on%}
+												<h5>{{verb.name}}</h5> <br>
+												<table class="table table-borderless">
+													<tbody>
+													{%for category in verb.info%}	
+														<tr>
+														  <th scope="row">
+														  {%if forloop.counter == 1%}General{%endif%}
+														  {%if forloop.counter == 2%}Politics{%endif%}
+														  {%if forloop.counter == 3%}Computers{%endif%}
+														  {%if forloop.counter == 4%}Science{%endif%}
+														  {%if forloop.counter == 5%}Recreational{%endif%}
+														  {%if forloop.counter == 6%}RFP{%endif%}
+														  </th>
+														  {%for word in category%}
+														  	<td>{{word}}</td>
+														  {%endfor%}
+														</tr>
+													{%endfor%}
+													</tbody>
+												</table>
+												<br>
+											{%endfor%}
+										{%endif%}
+								    </div>
+								    <div id="by{{forloop.counter}}" class="container tab-pane fade"><br>
+										{%if entity.actions_by_ct == 0%}
+								    		<h6>No actions performed by entity...</h6>
+										{%else%}
+											<div class="row justify-content-center"><h4>Verb interpretations in different domains</h4></div>
+											{%for verb in entity.by%}
+												<h5>{{verb.name}}</h5> <br>
+												<table class="table table-borderless">
+													<tbody>
+													{%for category in verb.info%}	
+														<tr>
+														  <th scope="row">
+														  {%if forloop.counter == 1%}General{%endif%}
+														  {%if forloop.counter == 2%}Politics{%endif%}
+														  {%if forloop.counter == 3%}Computers{%endif%}
+														  {%if forloop.counter == 4%}Science{%endif%}
+														  {%if forloop.counter == 5%}Recreational{%endif%}
+														  {%if forloop.counter == 6%}RFP{%endif%}
+														  </th>
+														  {%for word in category%}
+														  	<td>{{word}}</td>
+														  {%endfor%}
+														</tr>
+													{%endfor%}
+													</tbody>
+												</table>
+												<br>
+											{%endfor%}
+										{%endif%}
+								    </div>
+								    <div id="sentimentp{{forloop.counter}}" class="container tab-pane fade">
+										<table class="table table-borderless">
+											<tbody>
+												  <tr>
+													<th>Sentence</th>
+													<th>Sentiment</th>
+												  </tr>
+												  {%for sent in entity.positive_sent%}
+												  <tr>
+												  	<td>{{sent.0}}</td>
+												  	<td>{{sent.1}}</td>
+												  </tr>
+												  {%endfor%}
+												
+											</tbody>
+										</table>
+								    </div>
+								    <div id="sentimentn{{forloop.counter}}" class="container tab-pane fade">
+										<table class="table table-borderless">
+											<tbody>
+												  <tr>
+													<th>Sentence</th>
+													<th>Sentiment</th>
+												  </tr>
+												  {%for sent in entity.negative_sent%}
+												  <tr>
+												  	<td>{{sent.0}}</td>
+												  	<td>{{sent.1}}</td>
+												  </tr>
+												  {%endfor%}
+												
+											</tbody>
+										</table>
+								    </div>
+								</div>
+							</div>
+						</div>
+					</div>
+			    </div>
+			{%endfor%}
+		</div>
+		<br>
+		</div>
+	</div>
+	<div class="container" id ="events">
+		<div class="row justify-content-center"><h2>Top Events&nbsp;</h2><button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#content3">Toggle</button></div><br>
+		<div id="content3" class="collapse show">
+		<table class="table table-borderless">
+			<tbody>
+				  <tr>
+					<th>Date</th>
+					<th>Location</th>
+					<th>Verb</th>
+					<th>Sentence</th>
+				  </tr>
+				  {%for event in events%}
+				  <tr>
+				  	<td>{{event.0}}</td>
+				  	<td>{{event.1}}</td>
+				  	<td>{{event.3}}</td>
+				  	<td>{{event.5|safe}}</td>
+				  </tr>
+				  {%endfor%}
+				
+			</tbody>
+		</table>
+		<p class="text-right"><h6><span style="color: #1e32e1">Blue:&nbsp;</span>Subject, <span style="color: #5cbc43">Green:&nbsp;</span>Object</h6></p>
+		</div>
+	</div>
+	{%if is_rfp == 1%}
+	<div class="container" id ="rfp">
+		<div class="row justify-content-center"><h2>RFP&nbsp;</h2><button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#content5">Toggle</button></div><br>
+		<div id="content5" class="collapse show">
+			<div class="row">
+			    <div class="col-sm-12">
+			    	<h6>Agency: {{agency}}</h6>
+					<h6>Classification: {{topic}}</h6>
+			    </div>
+			</div>
+			<div class="row justify-content-center"><h5>Summary of top ACM Classification Codes</h5></div>
+			<div class="row justify-content-center">
+				<table class="table table-borderless">
+					<tbody>
+						  <tr>
+							<th>Code</th>
+							<th>Term</th>
+							<th>Mentions</th>
+						  </tr>
+						  {%for code in codes%}
+						  <tr>
+						  	<td>{{code.0}}</td>
+						  	<td>{{code.1}}</td>
+						  	<td>{{code.2}}</td>
+						  </tr>
+						  {%endfor%}
+					</tbody>
+				</table>
+			</div>
+			<div class="row justify-content-center"><h5>History of Funding Agency</h5></div>
+			<div class="row justify-content-center">
+	        	<img src="data:image/png;base64,{{time_series}}" class="img-fluid" style="width:600px;height:400px;" alt="Time Series">
+	        </div>
+	        <div class="row justify-content-center">
+	        	<img src="data:image/png;base64,{{pie_share}}" class="img-fluid" style="width:700px;height:400px;" alt="Pie Share">
+	        </div>
+		</div>
+	</div>
+	{%endif%}
+	{%if is_person == 1%}
+	<div class="container" id ="person">
+		<div class="row justify-content-center"><h2>Person&nbsp;</h2><button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#content6">Toggle</button></div><br>
+		<div id="content6" class="collapse show">
+			<div class="row">
+			    <div class="col-sm-12">
+			    	<h6>Name: {{person}}</h6>
+			    </div>
+			</div>
+			<div class="row justify-content-center"><h5>Summary of top ACM Classification Codes</h5></div>
+			<div class="row justify-content-center">
+				<table class="table table-borderless">
+					<tbody>
+						  <tr>
+							<th>Code</th>
+							<th>Term</th>
+							<th>Mentions</th>
+						  </tr>
+						  {%for code in codes%}
+						  <tr>
+						  	<td>{{code.0}}</td>
+						  	<td>{{code.1}}</td>
+						  	<td>{{code.2}}</td>
+						  </tr>
+						  {%endfor%}
+					</tbody>
+				</table>
+			</div>
+			<div class="row justify-content-center"><h5>Areas of Interest</h5></div>
+			<div class="row justify-content-center">
+	        	<img src="data:image/png;base64,{{time_series}}" class="img-fluid" style="width:600px;height:400px;" alt="Time Series">
+	        </div>
+	        <div class="row justify-content-center">
+	        	<img src="data:image/png;base64,{{pie_share}}" class="img-fluid" style="width:700px;height:400px;" alt="Pie Share">
+	        </div>
+	        <div class="row justify-content-center"><h5>Recent Publications</h5></div>
+	        <table class="table table-borderless">
+				<tbody>
+					  <tr>
+						<th>Year</th>
+						<th>Title</th>
+					  </tr>
+					  {%for pub in pubs%}
+					  <tr>
+					  	<td>{{pub.0}}</td>
+					  	<td><a href = "{{pub.2}}">{{pub.1}}</a></td>
+					  </tr>
+					  {%endfor%}
+					
+				</tbody>
+			</table>
+		</div>
+	</div>
+	{%endif%}
+	<div class="container" id = "pprint">
+		<div class="row justify-content-center"><h2>Full Text&nbsp;</h2><button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#content4">Toggle</button></div><br>
+		<div id="content4" class="collapse">
+		<div class="tab-content">
+			<div id="less" class="container tab-pane active"><br>
+				{{summary|safe}}
+			</div>
+			<div id="more" class="container tab-pane fade"><br>
+				{{summary|safe}}
+			</div>
+		</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
