@@ -18,9 +18,6 @@ beautifulsoup4 == 4.9.3
 # wordvis/vis/Helpers/helpers2.py: 35
 datefinder == 0.7.1
 
-# wordvis/vis/Helpers/helpers.py: 25
-# wordvis/vis/Helpers/helpers2.py: 24
-en_core_web_lg == 2.3.1
 
 # wordvis/vis/Helpers/helpers2.py: 27
 fuzzywuzzy == 0.18.0
