@@ -1,1 +1,1 @@
-echo "web: python app.py" > Procfile
+echo "web: python manage.py" > Procfile
