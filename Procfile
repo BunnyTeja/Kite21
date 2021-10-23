@@ -1,1 +1,1 @@
-echo "web: python manage.py" > Procfile
+echo "web: python helpers2.py" > Procfile
