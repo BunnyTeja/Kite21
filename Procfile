@@ -1,1 +1,1 @@
-echo "web: python helpers2.py" > Procfile
+"web: python manage.py runserver 0.0.0.0:\$PORT"
